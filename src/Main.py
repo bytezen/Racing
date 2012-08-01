@@ -5,8 +5,6 @@ Created on Jul 29, 2012
 '''
 import sys
 import qualify
-import Track
-import Driver
 
 
     
@@ -15,7 +13,7 @@ def race():
     print '''
     Welcome to another exciting Race Day!
     
-    Today's Race features:
+    Today's Qualifying  at Atlanta Speedway features:
     
     #48 Jimmy Johnson      #24 Jeff Gordon
     #07 Clint Bowyer       #17 Matt Kenseth
@@ -23,15 +21,9 @@ def race():
     #2 Kurt Busch          #31 Jeff Burton
     '''
 
-    print '''
-    Choose a race track:
-    
-    1 Atlanta
-    '''
-
-    
-            
-        
+def getQualifyRollCountForTrack(type):
+    return 3
+    pass
 
 
 def qualify(trackType, qualifyRating):
@@ -51,11 +43,51 @@ def get_qualifying_rolls(trackType):
         num_of_rolls = 5                
     
     return num_of_rolls    
-    
+
+
+class Track(object):
+    '''
+    classdocs
+    '''
+
+
+    def __init__(self, name, type, laps, pits, pitWindows, rolls):
+        '''
+        Constructor
+        '''
+        self.name = name
+        self.type = type
+        self.laps = laps
+        self.pitCount = pits
+        self.pitWindow = pitWindows
+        self.rolls = rolls
+
+
+        
+class Driver(object):
+    '''
+    classdocs
+    '''
+
+
+    def __init__(self,name, number, overall, quality, trouble, trackRatings = {}):
+        '''
+        Constructor
+        '''
+        self.name = name
+        self.number = number
+        self.overallRating = overall
+        self.qualityRating = quality
+        self.troubleRating = trouble
+        self.trackRatings = trackRatings
+        
+        
+                
             
 
 if __name__ == '__main__':
-
+    race()
+    
     atlanta = Track("Atlanta Motor Speedway", "speed", 20, 2, 8, 1)
     racer = range(8)
     
@@ -68,11 +100,13 @@ if __name__ == '__main__':
     racer[6] = Driver("Kurt Busch",'2',  'A', 'A', 'A', trackRatings = {'speed':'B' , 'short':'B', 'super':'A','road':'B'})
     racer[7] = Driver("Jeff Burton",'31',  'A', 'B', 'A', trackRatings = {'speed':'A' , 'short':'B', 'super':'C','road':'C'})
     
+    track = atlanta
+    qualRollCount = getQualifyRollCountForTrack( track.type )
+    print qualRollCount
     
-
-    
+         
     #begin race
-    race()
+    
     #select a track
     #select drivers
     #qualify drivers
