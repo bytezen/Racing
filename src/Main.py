@@ -4,8 +4,8 @@ Created on Jul 29, 2012
 @author: rhazesspell
 '''
 import sys
-import qualify
-
+import qualify as q
+import random
 
     
     
@@ -21,19 +21,16 @@ def race():
     #2 Kurt Busch          #31 Jeff Burton
     '''
 
-def getQualifyRollCountForTrack(type):
-    return 3
-    pass
 
 
 def qualify(trackType, qualifyRating):
     return 0
 
 
-def get_qualifying_rolls(trackType):
+def getQualifyingRollCountForTrack(trackType):
     num_of_rolls = 0
     
-    if trackType == "speed":
+    if trackType == "speedway":
         num_of_rolls = 4
     elif trackType == "short":
         num_of_rolls = 3
@@ -88,9 +85,9 @@ class Driver(object):
 if __name__ == '__main__':
     race()
     
-    atlanta = Track("Atlanta Motor Speedway", "speed", 20, 2, 8, 1)
-    racer = range(8)
+    atlanta = Track("Atlanta Motor Speedway", "speedway", 20, 2, 8, 1)
     
+    racer = range(8)
     racer[0] = Driver("Jimmy Johnson",'48',  'A', 'A', 'A', trackRatings = {'speed':'A' , 'short':'A', 'super':'A','road':'A'})
     racer[1] = Driver("Jeff Gordon",'24',  'A', 'A', 'A', trackRatings = {'speed':'A' , 'short':'A', 'super':'A','road':'A'})    
     racer[2] = Driver("Clint Bowyer",'07',  'A', 'B', 'A', trackRatings = {'speed':'A' , 'short':'A', 'super':'B','road':'A'})
@@ -101,10 +98,38 @@ if __name__ == '__main__':
     racer[7] = Driver("Jeff Burton",'31',  'A', 'B', 'A', trackRatings = {'speed':'A' , 'short':'B', 'super':'C','road':'C'})
     
     track = atlanta
-    qualRollCount = getQualifyRollCountForTrack( track.type )
-    print qualRollCount
+    qualRollCount = getQualifyingRollCountForTrack( track.type )
     
-         
+    
+    print "num\tqualify(mph)"
+    print "=================\n"
+    qualifying = {}
+    for r in racer:        
+        speedRatingTotal = 0
+        for i in range(qualRollCount):
+            roll = int(random.uniform(0,100))
+            
+            if roll == 99:  # TODO: Implement Trouble
+                speedRatingTotal = 0
+                break
+            sr = q.getSpeedRating(roll, r.qualityRating)
+            
+            speedRatingTotal = speedRatingTotal + sr
+        
+        if speedRatingTotal > 0:
+            qualifyingAvgSpeed = q.getAverageSpeed( speedRatingTotal, track.type )
+            thousands = int(random.uniform(0,100)) / 1000.
+            qualifyingAvgSpeed = qualifyingAvgSpeed + thousands    
+            print r.number,': ', qualifyingAvgSpeed
+        else: # TODO: Implement car trouble
+            print r.number,': ', 'Car trouble during qualifying starting at back'
+            qualifyingAvgSpeed = -1
+        
+        qualifying[r.number] = qualifyingAvgSpeed    
+            
+    qualifying = sorted(qualifying.items(), key=lambda x: x[1])            
+    
+#    print qualifying         
     #begin race
     
     #select a track
