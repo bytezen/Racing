@@ -120,14 +120,19 @@ if __name__ == '__main__':
             qualifyingAvgSpeed = q.getAverageSpeed( speedRatingTotal, track.type )
             thousands = int(random.uniform(0,100)) / 1000.
             qualifyingAvgSpeed = qualifyingAvgSpeed + thousands    
-            print r.number,': ', qualifyingAvgSpeed
+#            print r.number,': ', qualifyingAvgSpeed
         else: # TODO: Implement car trouble
-            print r.number,': ', 'Car trouble during qualifying starting at back'
+#            print r.number,': ', 'Car trouble during qualifying starting at back'
             qualifyingAvgSpeed = -1
         
         qualifying[r.number] = qualifyingAvgSpeed    
             
-    qualifying = sorted(qualifying.items(), key=lambda x: x[1])            
+    qualifying = sorted(qualifying.items(), key=lambda x: x[1])
+    qualifying.reverse()   
+    
+    for num, mph in qualifying:
+        print "%s\t%.3f" % (num,mph)
+    
     
 #    print qualifying         
     #begin race
