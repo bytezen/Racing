@@ -104,14 +104,15 @@ if __name__ == '__main__':
     
     print "num\tqualify(mph)"
     print "=================\n"
-    qualifying = {}
+    qualified = {}
+    disqualified = {}
     for r in racer:        
         speedRatingTotal = 0
         for i in range(qualRollCount):
             roll = int(random.uniform(0,100))
             
             if roll == 99:  # TODO: Implement Trouble
-                speedRatingTotal = 0
+                speedRatingTotal = -1
                 break
             sr = q.getSpeedRating(roll, r.qualityRating)
             
@@ -121,19 +122,28 @@ if __name__ == '__main__':
             qualifyingAvgSpeed = q.getAverageSpeed( speedRatingTotal, track.type )
             thousands = int(random.uniform(0,100)) / 1000.
             qualifyingAvgSpeed = qualifyingAvgSpeed + thousands    
-#            print r.number,': ', qualifyingAvgSpeed
+            qualified[r.number] = qualifyingAvgSpeed    
         else: # TODO: Implement car trouble
-#            print r.number,': ', 'Car trouble during qualifying starting at back'
-            qualifyingAvgSpeed = -1
+            roll = int(random.uniform(0,10))
+            trouble = q.qualify_trouble_result[roll]
+            disqualified[r.number] = trouble
         
-        qualifying[r.number] = qualifyingAvgSpeed    
             
-    qualifying = sorted(qualifying.items(), key=lambda x: x[1])
+    qualifying = sorted(qualified.items(), key=lambda x: x[1])
     qualifying.reverse()   
+
+    if len(disqualified) > 0:
+        for i in disqualified.items():
+            qualifying.append( (i[0],0.0))
     
     for num, mph in qualifying:
-        print "%s\t%.3f" % (num,mph)
+        print "#%s\t%.3f" % (num,mph)
     
+    if len(disqualified) > 0:
+        print "Disqualified:"
+        print "+="*10
+        for num,dq in disqualified.items():
+            print "%s\t%s" % (num,dq)
     
 #    print qualifying         
     #begin race
