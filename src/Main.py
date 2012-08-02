@@ -4,7 +4,7 @@ Created on Jul 29, 2012
 @author: rhazesspell
 '''
 import sys
-import qualify as q
+import Qualify as q
 import random
 
     
@@ -83,6 +83,7 @@ class Driver(object):
             
 
 if __name__ == '__main__':
+    q.configureData()
     race()
     
     atlanta = Track("Atlanta Motor Speedway", "speedway", 20, 2, 8, 1)
