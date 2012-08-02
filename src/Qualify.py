@@ -4,6 +4,11 @@ Created on Jul 29, 2012
 @author: rhazesspell
 '''
 
+_troubleData = "../resources/track_qualify_trouble.dat"
+
+
+
+
 # A QUALIFY RATING TABLE
 qualify_a = [0]*100
 for i in range(10):
@@ -154,6 +159,8 @@ speed_speedway = { 48: 187.5,
 #TODO: Implement road course
 
 
+qualify_trouble_result = []
+
 def getSpeedRating(roll,qualifyRating):
     if qualifyRating == 'A':
         return qualify_a[roll]
@@ -184,5 +191,17 @@ def getAverageSpeed(speedRatingTotal, trackType):
 
     return -1
 
+
+def configureData():    
+    fo = open(_troubleData, 'r')
+    lines = fo.readline().split('\r') 
+    for l in lines[1:]:  #first line is header "roll,trouble"
+        x,y = l.split(",")
+        qualify_trouble_result.append(y)
+     
+
+    fo.close()
+    
+    
 if __name__ == '__main__':
     pass
