@@ -9,7 +9,7 @@ import random
 
     
     
-def race():
+def qualify():
     print '''
     Welcome to another exciting Race Day!
     
@@ -21,10 +21,10 @@ def race():
     #2 Kurt Busch          #31 Jeff Burton
     '''
 
+def race():
+    pass
 
 
-def qualify(trackType, qualifyRating):
-    return 0
 
 
 def getQualifyingRollCountForTrack(trackType):
@@ -41,6 +41,12 @@ def getQualifyingRollCountForTrack(trackType):
     
     return num_of_rolls    
 
+def rollDice(sides=100, times=1):
+    roll = 0 
+    for i in range(times):
+        roll = roll + int(random.uniform(0,sides))
+
+    return roll
 
 class Track(object):
     '''
@@ -77,14 +83,16 @@ class Driver(object):
         self.qualityRating = quality
         self.troubleRating = trouble
         self.trackRatings = trackRatings
-        
+
+    def __repr__(self):
+        return "#%s %s" % (self.number, self.name)        
         
                 
             
 
 if __name__ == '__main__':
     q.configureData()
-    race()
+    qualify()
     
     atlanta = Track("Atlanta Motor Speedway", "speedway", 20, 2, 8, 1)
     
@@ -109,7 +117,7 @@ if __name__ == '__main__':
     for r in racer:        
         speedRatingTotal = 0
         for i in range(qualRollCount):
-            roll = int(random.uniform(0,100))
+            roll = rollDice()
             
             if roll == 99:  # TODO: Implement Trouble
                 speedRatingTotal = -1
@@ -120,11 +128,11 @@ if __name__ == '__main__':
         
         if speedRatingTotal > 0:
             qualifyingAvgSpeed = q.getAverageSpeed( speedRatingTotal, track.type )
-            thousands = int(random.uniform(0,100)) / 1000.
+            thousands = rollDice() / 1000.
             qualifyingAvgSpeed = qualifyingAvgSpeed + thousands    
             qualified[r.number] = qualifyingAvgSpeed    
         else: # TODO: Implement car trouble
-            roll = int(random.uniform(0,10))
+            roll = rollDice(sides=10)
             trouble = q.qualify_trouble_result[roll]
             disqualified[r.number] = trouble
         
@@ -145,11 +153,25 @@ if __name__ == '__main__':
         for num,dq in disqualified.items():
             print "%s\t%s" % (num,dq)
     
-#    print qualifying         
-    #begin race
+    #
+    #
+    # Race time!
+    #
     
-    #select a track
-    #select drivers
-    #qualify drivers
+    running_order = []
+    for i in qualifying:
+        for d in racer:
+            if d.number == i[0]:
+                running_order.append(d)
+    
+    
+    for l in range(1):
+        lap_speeds = []
+        for driver in running_order:
+            rollTotal = 0
+            for r in range(track.rolls):
+                roll = rollDice()
+                #lookup speed for driver
+    
     
     pass
