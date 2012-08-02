@@ -25,22 +25,6 @@ def race():
     pass
 
 
-
-
-def getQualifyingRollCountForTrack(trackType):
-    num_of_rolls = 0
-    
-    if trackType == "speedway":
-        num_of_rolls = 4
-    elif trackType == "short":
-        num_of_rolls = 3
-    elif trackType == "superSpeed":
-        num_of_rolls = 5
-    elif trackType == "road":
-        num_of_rolls = 5                
-    
-    return num_of_rolls    
-
 def rollDice(sides=100, times=1):
     roll = 0 
     for i in range(times):
@@ -60,11 +44,18 @@ class Track(object):
         '''
         self.name = name
         self.type = type
-        self.laps = laps
+        self.totalLaps = laps
         self.pitCount = pits
         self.pitWindow = pitWindows
         self.rolls = rolls
-
+        
+        if self.type == "speedway":
+            self.qualifyLaps = 4
+        elif self.type == "short":
+            self.qualifyLaps = 3
+        elif self.type in ["superSpeed","road"]:
+            self.qualifyLaps = 5
+    
 
         
 class Driver(object):
@@ -107,8 +98,6 @@ if __name__ == '__main__':
     racer[7] = Driver("Jeff Burton",'31',  'A', 'B', 'A', trackRatings = {'speed':'A' , 'short':'B', 'super':'C','road':'C'})
     
     track = atlanta
-    qualRollCount = getQualifyingRollCountForTrack( track.type )
-    
     
     print "num\tqualify(mph)"
     print "=================\n"
@@ -116,7 +105,7 @@ if __name__ == '__main__':
     disqualified = {}
     for r in racer:        
         speedRatingTotal = 0
-        for i in range(qualRollCount):
+        for i in range(track.qualifyLaps):
             roll = rollDice()
             
             if roll == 99:  # TODO: Implement Trouble
@@ -159,13 +148,15 @@ if __name__ == '__main__':
     #
     
     running_order = []
+    currentLap = 1
+    
     for i in qualifying:
         for d in racer:
             if d.number == i[0]:
                 running_order.append(d)
     
     
-    for l in range(1):
+    if currentLap < track.totalLaps:  # Just run for one 1 lap to test; track.laps to run fully
         lap_speeds = []
         for driver in running_order:
             rollTotal = 0
