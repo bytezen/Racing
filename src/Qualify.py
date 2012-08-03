@@ -178,7 +178,7 @@ def getSpeedRating(roll,qualifyRating):
 
 
 def getAverageSpeed(speedRatingTotal, trackType):
-    if trackType == 'speedway':
+    if trackType == 'speed':
         return speed_speedway[speedRatingTotal]
     elif trackType == 'short':
         return speed_short[speedRatingTotal]
