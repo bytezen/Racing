@@ -9,17 +9,19 @@ import random
 
     
     
-def qualify():
-    print '''
+def qualify(trackName):
+    msg = """
     Welcome to another exciting Race Day!
     
-    Today's Qualifying  at Atlanta Speedway features:
+    Today's Qualifying  at {name} features:
     
     #48 Jimmy Johnson      #24 Jeff Gordon
     #07 Clint Bowyer       #17 Matt Kenseth
     #5 Kyle Busch          #20 Tony Stewart
     #2 Kurt Busch          #31 Jeff Burton
-    '''
+    """
+    
+    print msg.format(name=trackName)
 
 def race():
     pass
@@ -31,6 +33,11 @@ def rollDice(sides=100, times=1):
         roll = roll + int(random.uniform(0,sides))
 
     return roll
+
+def initializeDriverForRace(driver, trackType):
+    rating = driver.getRatingOnTrack(trackType)
+    
+    pass
 
 class Track(object):
     '''
@@ -49,7 +56,8 @@ class Track(object):
         self.pitWindow = pitWindows
         self.rolls = rolls
         
-        if self.type == "speedway":
+        
+        if self.type == "speed":
             self.qualifyLaps = 4
         elif self.type == "short":
             self.qualifyLaps = 3
@@ -74,7 +82,45 @@ class Driver(object):
         self.qualityRating = quality
         self.troubleRating = trouble
         self.trackRatings = trackRatings
+        self.speedChart = [-1]*100
+        self.raceSpeed = 0
 
+    def initializeSpeedChart(self, trackType):
+        dataFile = "../resources/" + self.number + "sr.dat"
+        col = None
+        
+        if trackType == "speed": 
+            col = 1
+        elif trackType == "short": 
+            col = 2
+        elif trackType == "super": 
+            col = 3
+        elif trackType == "road": 
+            col = 4
+        else:
+            msg = "unknown track type: " + trackType
+            raise ValueError,  msg 
+        
+         
+        fo = open(dataFile, 'r')
+        lines = fo.readline().split('\r') 
+        for l in lines[1:]:  #first line is header "roll,trouble"
+            _l = l.split(",")
+            self.speedChart[int(_l[0])] = int(_l[col])
+         
+        fo.close()        
+        
+
+    def getSpeed(self, roll):
+        if self.speedChart[0] < 0:
+            raise Exception, "Speed chart not initialized"
+        
+        return self.speedChart[roll]
+    
+    def setRaceSpeed(self, speed):
+        self.raceSpeed = self.raceSpeed + speed
+                
+                    
     def __repr__(self):
         return "#%s %s" % (self.number, self.name)        
         
@@ -83,9 +129,9 @@ class Driver(object):
 
 if __name__ == '__main__':
     q.configureData()
-    qualify()
     
-    atlanta = Track("Atlanta Motor Speedway", "speedway", 20, 2, 8, 1)
+    atlanta = Track("Atlanta Motor Speedway", "speed", 20, 2, 8, 1)
+    pocono = Track("Pocono Raceway","speed",10,1,7,2)
     
     racer = range(8)
     racer[0] = Driver("Jimmy Johnson",'48',  'A', 'A', 'A', trackRatings = {'speed':'A' , 'short':'A', 'super':'A','road':'A'})
@@ -97,7 +143,12 @@ if __name__ == '__main__':
     racer[6] = Driver("Kurt Busch",'2',  'A', 'A', 'A', trackRatings = {'speed':'B' , 'short':'B', 'super':'A','road':'B'})
     racer[7] = Driver("Jeff Burton",'31',  'A', 'B', 'A', trackRatings = {'speed':'A' , 'short':'B', 'super':'C','road':'C'})
     
-    track = atlanta
+    track = pocono
+    qualify( track.name)
+    
+    for d in racer:
+        d.initializeSpeedChart(track.type)
+    
     
     print "num\tqualify(mph)"
     print "=================\n"
@@ -157,12 +208,37 @@ if __name__ == '__main__':
     
     
     if currentLap < track.totalLaps:  # Just run for one 1 lap to test; track.laps to run fully
-        lap_speeds = []
+        lap_speeds = {}
         for driver in running_order:
             rollTotal = 0
             for r in range(track.rolls):
                 roll = rollDice()
                 #lookup speed for driver
+                spd = driver.getSpeed(roll)
+                if spd < 0:
+                    print "Need to implement trouble for drivers"
+                    
+                rollTotal = rollTotal + spd
+                
+            lap_speeds[driver] = rollTotal     
+            driver.setRaceSpeed( rollTotal ) 
     
-    
+        lapOrder = sorted( lap_speeds.items(), key=lambda x: x[1] )
+        lapOrder.reverse()
+        print "\nLap #",currentLap," results\n", "="*10
+        
+        for i in lapOrder:
+            print "#",i[0].number,"\tspeed = ", i[1]
+            
+
+        running_order = sorted( lapOrder, key = lambda x : x[0].raceSpeed )
+        running_order.reverse()
+        print "\nRACE STANDINGS", "=+="*10        
+        print running_order
+            
+        currentLap = currentLap +1
+            
+            
+            
+            
     pass
