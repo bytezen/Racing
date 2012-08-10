@@ -6,8 +6,10 @@ Created on Jul 29, 2012
 import sys
 import Qualify as q
 import random
+import Track
+from Driver import RaceDriver
 
-    
+import Race    
     
 def qualify(trackName):
     msg = """
@@ -39,109 +41,25 @@ def initializeDriverForRace(driver, trackType):
     
     pass
 
-class Track(object):
-    '''
-    classdocs
-    '''
-
-
-    def __init__(self, name, type, laps, pits, pitWindows, rolls):
-        '''
-        Constructor
-        '''
-        self.name = name
-        self.type = type
-        self.totalLaps = laps
-        self.pitCount = pits
-        self.pitWindow = pitWindows
-        self.rolls = rolls
-        
-        
-        if self.type == "speed":
-            self.qualifyLaps = 4
-        elif self.type == "short":
-            self.qualifyLaps = 3
-        elif self.type in ["superSpeed","road"]:
-            self.qualifyLaps = 5
-    
 
         
-class Driver(object):
-    '''
-    classdocs
-    '''
-
-
-    def __init__(self,name, number, overall, quality, trouble, trackRatings = {}):
-        '''
-        Constructor
-        '''
-        self.name = name
-        self.number = number
-        self.overallRating = overall
-        self.qualityRating = quality
-        self.troubleRating = trouble
-        self.trackRatings = trackRatings
-        self.speedChart = [-1]*100
-        self.raceSpeed = 0
-
-    def initializeSpeedChart(self, trackType):
-        dataFile = "../resources/" + self.number + "sr.dat"
-        col = None
-        
-        if trackType == "speed": 
-            col = 1
-        elif trackType == "short": 
-            col = 2
-        elif trackType == "super": 
-            col = 3
-        elif trackType == "road": 
-            col = 4
-        else:
-            msg = "unknown track type: " + trackType
-            raise ValueError,  msg 
-        
-         
-        fo = open(dataFile, 'r')
-        lines = fo.readline().split('\r') 
-        for l in lines[1:]:  #first line is header "roll,trouble"
-            _l = l.split(",")
-            self.speedChart[int(_l[0])] = int(_l[col])
-         
-        fo.close()        
-        
-
-    def getSpeed(self, roll):
-        if self.speedChart[0] < 0:
-            raise Exception, "Speed chart not initialized"
-        
-        return self.speedChart[roll]
-    
-    def setRaceSpeed(self, speed):
-        self.raceSpeed = self.raceSpeed + speed
-                
-                    
-    def __repr__(self):
-        return "#%s %s" % (self.number, self.name)        
-        
-                
             
 
 if __name__ == '__main__':
     q.configureData()
     
-    atlanta = Track("Atlanta Motor Speedway", "speed", 20, 2, 8, 1)
-    pocono = Track("Pocono Raceway","speed",10,1,7,2)
+    atlanta = Track.Atlanta
+    pocono = Track.Pocono
     
     racer = range(8)
-    racer[0] = Driver("Jimmy Johnson",'48',  'A', 'A', 'A', trackRatings = {'speed':'A' , 'short':'A', 'super':'A','road':'A'})
-    racer[1] = Driver("Jeff Gordon",'24',  'A', 'A', 'A', trackRatings = {'speed':'A' , 'short':'A', 'super':'A','road':'A'})    
-    racer[2] = Driver("Clint Bowyer",'07',  'A', 'B', 'A', trackRatings = {'speed':'A' , 'short':'A', 'super':'B','road':'A'})
-    racer[3] = Driver("Matt Kenseth",'17',  'A', 'B', 'B', trackRatings = {'speed':'A' , 'short':'A', 'super':'B','road':'C'})                
-    racer[4] = Driver("Kyle Busch",'5',  'A', 'A', 'A', trackRatings = {'speed':'A' , 'short':'A', 'super':'C','road':'A'})
-    racer[5] = Driver("Tony Stewart",'20',  'A', 'B', 'B', trackRatings = {'speed':'A' , 'short':'A', 'super':'D','road':'A'})
-    racer[6] = Driver("Kurt Busch",'2',  'A', 'A', 'A', trackRatings = {'speed':'B' , 'short':'B', 'super':'A','road':'B'})
-    racer[7] = Driver("Jeff Burton",'31',  'A', 'B', 'A', trackRatings = {'speed':'A' , 'short':'B', 'super':'C','road':'C'})
+    racer[0] = RaceDriver("Jimmy Johnson",'48',  'A', 'A', 'A', trackRatings = {'speed':'A' , 'short':'A', 'super':'A','road':'A'})
+    racer[1] = RaceDriver("Jeff Gordon",'24',  'A', 'A', 'A', trackRatings = {'speed':'A' , 'short':'A', 'super':'A','road':'A'})    
+    racer[2] = RaceDriver("Clint Bowyer",'07',  'A', 'B', 'A', trackRatings = {'speed':'A' , 'short':'A', 'super':'B','road':'A'})
+    racer[3] = RaceDriver("Matt Kenseth",'17',  'A', 'B', 'B', trackRatings = {'speed':'A' , 'short':'A', 'super':'B','road':'C'})                
+    racer[4] = RaceDriver("Kyle Busch",'5',  'A', 'A', 'A', trackRatings = {'speed':'A' , 'short':'A', 'super':'C','road':'A'})
+    racer[5] = RaceDriver("Tony Stewart",'20',  'A', 'B', 'B', trackRatings = {'speed':'A' , 'short':'A', 'super':'D','road':'A'})
+    racer[6] = RaceDriver("Kurt Busch",'2',  'A', 'A', 'A', trackRatings = {'speed':'B' , 'short':'B', 'super':'A','road':'B'})
+    racer[7] = RaceDriver("Jeff Burton",'31',  'A', 'B', 'A', trackRatings = {'speed':'A' , 'short':'B', 'super':'C','road':'C'})
     
     track = pocono
     qualify( track.name)
