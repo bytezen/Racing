@@ -170,6 +170,8 @@ speed_speedway = { 48: 187.5,
 
 #TODO: Implement road course
 
+def getQualifySpeedChart(trackRating):
+    return eval("qualify_"+trackRating.lower()) 
 
 def getQualifyTroubleDetail(roll):            
     return qualifyTroubleResult[roll]

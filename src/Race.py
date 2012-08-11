@@ -33,6 +33,8 @@ class Race(object):
         self.driverSpeedChart = {}
         self.driverQualifyMap = {}
         self._enterDrivers(drivers)
+        self.currentLap = 0
+        self.lap = []
         
 
     def __initializeSpeedChart(self, driverNumber):
@@ -72,9 +74,11 @@ class Race(object):
         self.drivers = drivers
         
         for d in drivers:
+            trackRating = d.getTrackRating( self.track.type )
             #Load the qualifying speeds
-            self.__initializeSpeedChart(d.number)
+            self.driverQualifyMap[d.number] = Qualify.getQualifySpeedChart(trackRating)
             #Load the speed ratings for this race
+            self.__initializeSpeedChart(d.number)
             pass
 
 
@@ -84,37 +88,50 @@ class Race(object):
             qualifying speeds indexed by driver number
         """
         _qualified = {}
-        disqualified = []
-        for driver in self.drivers:        
-            speedRatingTotal = 0
-            troubleQualifying = False
-            for i in range(self.track.qualifyLaps):
-                roll = rollDice()
-                
-                sr = Qualify.getSpeedRating(roll, driver.qualityRating)
-                if( sr == Qualify.TROUBLE):
-                    troubleQualifying = True
-                    break
-                speedRatingTotal = speedRatingTotal + sr
+        disqualified = {}
+        for driver in self.drivers:
+            qualifySpeed, troubleMsg = self.qualifyDriver(driver)
+            _qualified[driver.number] = qualifySpeed
             
-            if troubleQualifying:
-                roll = rollDice(sides=10)
-                trouble = Qualify.getQualifyTroubleDetail(roll)
-                disqualified.append((driver.number,trouble))
-            else:                    
-                roll = rollDice()
-                _qualified[driver.number] = Qualify.getAverageSpeed( roll, speedRatingTotal, self.track.type )    
-            
+            if troubleMsg:
+                disqualified[driver.number] = troubleMsg
                 
         qualifying = sorted(_qualified.items(), key=lambda x: x[1])
         qualifying.reverse()   
-    
-        if len(disqualified) > 0:
-            for i in disqualified:
-                qualifying.append( (i[0],0.0) )
-            
         
         return [qualifying,disqualified]
+
+    
+    def qualifyDriver(self, driver):
+        """ 
+        return tuple of qualifying speed and trouble message if any
+        """ 
+        speedRatingTotal = 0
+        troubleQualifying = False
+        
+        for i in range(self.track.qualifyLaps):
+            roll = rollDice()
+            
+            speedRating = self.driverQualifyMap[driver.number][roll]
+            if( speedRating == Qualify.TROUBLE):
+                troubleQualifying = True
+                break
+            
+            speedRatingTotal += speedRating
+        
+        if troubleQualifying:
+            roll = rollDice(sides=10)
+            trouble = Qualify.getQualifyTroubleDetail(roll)
+            
+            return 0.0, trouble
+        else:                    
+            roll = rollDice()
+            speed = Qualify.getAverageSpeed( roll, speedRatingTotal, self.track.type )
+            return speed, None        
+        
+         
+    
+    
 
 
 
