@@ -27,6 +27,7 @@ class RaceTrack(object):
         self.pitCount = pits
         self.pitWindow = pitWindows
         self.rolls = rolls
+        self.grid = 2  # cars per row in starting grid
         
         
         if self.type == SPEED:

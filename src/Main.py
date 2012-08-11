@@ -70,6 +70,8 @@ if __name__ == '__main__':
         for num, reason in disqualified.items():    
             print "*%s\t%s" % (num,reason)
     
+    if 1:
+        quit()
     #
     #
     # Race time!

@@ -8,6 +8,7 @@ import Track
 import Driver
 import Qualify
 import random
+import math
 
 
 def rollDice(sides=100, times=1):
@@ -17,6 +18,33 @@ def rollDice(sides=100, times=1):
 
     return roll
 
+
+class LapResult:
+    def __init__(self):
+        self._result = {}
+        self.runningOrder = []
+        self.closed = False
+        
+    def addDriverResult(self, driverNumber, rolls, pit=False, trouble=None):
+        if not self.closed:
+            self._result[driverNumber] = {'rolls': rolls,
+                                         'speed': sum(rolls),
+                                         'pit': pit,
+                                         'trouble': trouble }
+        else:
+            raise Exception, "lap results closed"
+        
+    def processResults(self):
+        self.runningOrder = sorted( self._result.items(), key=lambda x: x[1]['speed'])
+        self.runningOrder.reverse()
+        self.closed = True
+        return self.runningOrder
+                        
+    def __repr__(self):
+        s = ""
+        for driver,result in self.runningOrder:
+            s += (driver+",speed: "+str(result['speed'])+"\n")  
+        return s
 
 
 class Race(object):
@@ -35,6 +63,7 @@ class Race(object):
         self._enterDrivers(drivers)
         self.currentLap = 0
         self.lap = []
+        self.qualifying = []
         
 
     def __initializeSpeedChart(self, driverNumber):
@@ -90,19 +119,19 @@ class Race(object):
         _qualified = {}
         disqualified = {}
         for driver in self.drivers:
-            qualifySpeed, troubleMsg = self.qualifyDriver(driver)
+            qualifySpeed, troubleMsg = self._qualifyDriver(driver)
             _qualified[driver.number] = qualifySpeed
             
             if troubleMsg:
                 disqualified[driver.number] = troubleMsg
                 
-        qualifying = sorted(_qualified.items(), key=lambda x: x[1])
-        qualifying.reverse()   
+        self.qualifying = sorted(_qualified.items(), key=lambda x: x[1])
+        self.qualifying.reverse()   
         
-        return [qualifying,disqualified]
+        return self.qualifying,disqualified
 
     
-    def qualifyDriver(self, driver):
+    def _qualifyDriver(self, driver):
         """ 
         return tuple of qualifying speed and trouble message if any
         """ 
@@ -130,11 +159,37 @@ class Race(object):
             return speed, None        
         
          
+    def startEngines(self):
+        """ 
+            set the starting order with start grid penalties
+        """
+        lap0 = LapResult()
+        
+        startingRows = math.ceil( len(self.drivers) / self.track.grid )
+        rowsPerPenaltyPoint = max( startingRows / 7, 1 ) 
+        
+        for i,qualify in enumerate( self.qualifying ):
+            row = i / self.track.grid
+            penalty = -1 * rowsPerPenaltyPoint * row
+            
+            
+            lap0.addDriverResult(qualify[0], [penalty] )            
+        
+        lap0.processResults()            
+        self.lap.append( lap0 )  #Lap 0 list
+        
+        return self.lap[0]
+        
     
-    
-
-
 
         
 if __name__ == '__main__':
-    pass         
+    testRace = Race(Track.Atlanta, Driver.allDrivers)
+    print "Racing at: ", testRace.track
+    print "Drivers: ", testRace.drivers
+    
+    print "qualifying..."
+    print testRace.runQualifying() 
+    
+    print "gentlemen start your engines...starting grid = "
+    print testRace.startEngines()        
