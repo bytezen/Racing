@@ -6,8 +6,19 @@ Created on Jul 29, 2012
 
 _troubleData = "../resources/track_qualify_trouble.dat"
 
+TROUBLE = -1
+qualifyTroubleResult = []
 
-
+"""
+Load the data on import
+"""
+fo = open(_troubleData, 'r')
+    
+lines = fo.readline().split('\r') 
+for l in lines[1:]:  #first line is header "roll,trouble"
+    x,y = l.split(",")
+    qualifyTroubleResult.append(y)
+fo.close()
 
 # A QUALIFY RATING TABLE
 qualify_a = [0]*100
@@ -26,7 +37,7 @@ for i in range(66,75):
 for i in range(75,99):
     qualify_a[i] = 18
 
-qualify_a[99] = "trouble"
+qualify_a[99] = TROUBLE
 
 
 # B QUALIFY RATING TABLE
@@ -46,7 +57,7 @@ for i in range(71,80):
 for i in range(80,99):
     qualify_b[i] = 18
 
-qualify_b[99] = "trouble"
+qualify_b[99] = TROUBLE
 
 # C QUALIFY RATING TABLE
 qualify_c = [0]*100
@@ -65,7 +76,7 @@ for i in range(76,85):
 for i in range(85,99):
     qualify_c[i] = 18
 
-qualify_c[99] = "trouble"
+qualify_c[99] = TROUBLE
 
 # D QUALIFY RATING TABLE
 qualify_d = [0]*100
@@ -84,7 +95,8 @@ for i in range(81,90):
 for i in range(90,99):
     qualify_d[i] = 18
 
-qualify_d[99] = "trouble"
+qualify_d[99] = TROUBLE
+
 
 # E QUALIFY RATING TABLE
 qualify_e = [0]*100
@@ -103,7 +115,7 @@ for i in range(86,95):
 for i in range(95,99):
     qualify_e[i] = 18
 
-qualify_e[99] = "trouble"
+qualify_e[99] = TROUBLE
 
 
 # SPEED CHARTS
@@ -159,7 +171,8 @@ speed_speedway = { 48: 187.5,
 #TODO: Implement road course
 
 
-qualify_trouble_result = []
+def getQualifyTroubleDetail(roll):            
+    return qualifyTroubleResult[roll]
 
 def getSpeedRating(roll,qualifyRating):
     if qualifyRating == 'A':
@@ -174,33 +187,30 @@ def getSpeedRating(roll,qualifyRating):
         return qualify_e[roll]
     else:
         print "Can not get speed for roll=", roll," qualifyRatin = ", qualifyRating
-        return -1
+        raise Exception
+        
 
 
-def getAverageSpeed(speedRatingTotal, trackType):
+def getAverageSpeed(roll, speedRatingTotal, trackType):
+    avgSpeed = roll / 1000.
+    
     if trackType == 'speed':
-        return speed_speedway[speedRatingTotal]
+        avgSpeed += speed_speedway[speedRatingTotal]
     elif trackType == 'short':
-        return speed_short[speedRatingTotal]
+        avgSpeed += speed_short[speedRatingTotal]
     elif trackType == 'super':
-        pass
+        print "not implemented yet"
+        raise Exception
     elif trackType == 'road':
-        pass
+        print "not implemented yet"
+        raise Exception
     else:
         print "Can not get average Speed for speedRatingTotal: ", speedRatingTotal, " track type: ",trackType
+        raise Exception
 
-    return -1
+    return avgSpeed
 
 
-def configureData():    
-    fo = open(_troubleData, 'r')
-    lines = fo.readline().split('\r') 
-    for l in lines[1:]:  #first line is header "roll,trouble"
-        x,y = l.split(",")
-        qualify_trouble_result.append(y)
-     
-
-    fo.close()
     
     
 if __name__ == '__main__':

@@ -5,7 +5,19 @@ Created on Aug 10, 2012
 '''
 
 import Track
-from Driver import RaceDriver
+import Driver
+import Qualify
+import random
+
+
+def rollDice(sides=100, times=1):
+    roll = 0 
+    for i in range(times):
+        roll = roll + int(random.uniform(0,sides))
+
+    return roll
+
+
 
 class Race(object):
     '''
@@ -13,14 +25,14 @@ class Race(object):
     '''
 
 
-    def __init__(self, track):
+    def __init__(self, track, drivers):
         '''
         Constructor
         '''
         self.track = track
-        self.drivers = []
-        self.driverSpeedMap = {}
+        self.driverSpeedChart = {}
         self.driverQualifyMap = {}
+        self._enterDrivers(drivers)
         
 
     def __initializeSpeedChart(self, driverNumber):
@@ -34,25 +46,29 @@ class Race(object):
         dataFile = "../resources/" + driverNumber + "sr.dat"
         col = None
         
-        if self.type == Track.SPEED: 
+        if self.track.type == Track.SPEED: 
             col = 1
-        elif self.type == Track.SHORT: 
+        elif self.track.type == Track.SHORT: 
             col = 2
-        elif self.type == Track.SUPER: 
+        elif self.track.type == Track.SUPER: 
             col = 3
         else:  # Road course 
             col = 4
+            
          
+        speedChart = range(100) 
         fo = open(dataFile, 'r')
         lines = fo.readline().split('\r') 
         for l in lines[1:]:  #first line is header "roll,trouble"
             _l = l.split(",")
-            self.speedChart[int(_l[0])] = int(_l[col])
+            speedChart[int(_l[0])] = int(_l[col])
          
-        fo.close()                    
+        fo.close()
+        
+        self.driverSpeedChart[driverNumber] = speedChart                    
         
         
-    def addRacers(self, drivers):
+    def _enterDrivers(self, drivers):
         self.drivers = drivers
         
         for d in drivers:
@@ -62,8 +78,46 @@ class Race(object):
             pass
 
 
+    def runQualifying(self, verbose=False):
+        """ 
+            for the current track and drivers in the race return a sorted dictionary of 
+            qualifying speeds indexed by driver number
+        """
+        _qualified = {}
+        disqualified = []
+        for driver in self.drivers:        
+            speedRatingTotal = 0
+            troubleQualifying = False
+            for i in range(self.track.qualifyLaps):
+                roll = rollDice()
+                
+                sr = Qualify.getSpeedRating(roll, driver.qualityRating)
+                if( sr == Qualify.TROUBLE):
+                    troubleQualifying = True
+                    break
+                speedRatingTotal = speedRatingTotal + sr
+            
+            if troubleQualifying:
+                roll = rollDice(sides=10)
+                trouble = Qualify.getQualifyTroubleDetail(roll)
+                disqualified.append((driver.number,trouble))
+            else:                    
+                roll = rollDice()
+                _qualified[driver.number] = Qualify.getAverageSpeed( roll, speedRatingTotal, self.track.type )    
+            
+                
+        qualifying = sorted(_qualified.items(), key=lambda x: x[1])
+        qualifying.reverse()   
+    
+        if len(disqualified) > 0:
+            for i in disqualified:
+                qualifying.append( (i[0],0.0) )
+            
+        
+        return [qualifying,disqualified]
+
 
 
         
 if __name__ == '__main__':
-    test = Race( Track.Atlanta() )         
+    pass         

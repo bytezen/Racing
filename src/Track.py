@@ -36,7 +36,9 @@ class RaceTrack(object):
         elif self.type in [SUPER,ROAD]:
             self.qualifyLaps = 5
 
-            
+    def __repr__(self):
+        return self.name
+    
 Atlanta = RaceTrack.Atlanta()
 Pocono = RaceTrack.Pocono()    
 

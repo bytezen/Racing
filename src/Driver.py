@@ -1,6 +1,6 @@
         
         
-class RaceDriver(object):
+class Driver(object):
     '''
     classdocs
     '''
