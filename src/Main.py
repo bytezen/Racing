@@ -5,11 +5,34 @@ Created on Jul 29, 2012
 '''
 import sys
 import Qualify as q
-import random
+import random, logging
 import Track
 from Driver import *
 
 from Race import *
+
+
+#log to terminal
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+
+#log to file
+#logging.basicConfig(filename='log_filename.txt', level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+
+#log to file and terminal
+#logger = logging.getLogger()
+#logger.setLevel(logging.DEBUG)
+#
+#formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+#
+#fh = logging.FileHandler('log_filename.txt')
+#fh.setLevel(logging.DEBUG)
+#fh.setFormatter(formatter)
+#logger.addHandler(fh)
+#
+#ch = logging.StreamHandler()
+#ch.setLevel(logging.DEBUG)
+#ch.setFormatter(formatter)
+#logger.addHandler(ch)
     
 def qualify(trackName):
     msg = """
@@ -70,6 +93,28 @@ if __name__ == '__main__':
         for num, reason in disqualified.items():    
             print "*%s\t%s" % (num,reason)
     
+    race.setStartingGrid()
+    print "+="*10    
+    print "Starting Grid: "
+    print race.getRunningOrder()
+    
+    prevLap = race.getPreviousLapResult()
+    
+    totallaps = 1
+    driverLapSpeeds = []
+    
+    for l in range(0,totallaps):
+        print "Lap %s:" % l
+        for d in race.drivers:
+            #NOTE: here we can output intra-lap results
+            speeds = race.runLap(d)
+            driverLapSpeeds.append( (d.number,speeds) ) 
+
+    print "driver lap speeds = %s" % driverLapSpeeds
+    race.calculateLapResults( prevLap, driverLapSpeeds )
+
+
+    
     if 1:
         quit()
     #
@@ -93,7 +138,7 @@ if __name__ == '__main__':
             for r in range(track.rolls):
                 roll = rollDice()
                 #lookup speed for driver
-                spd = driver.getSpeed(roll)
+                spd = driver.calculateSpeed(roll)
                 if spd < 0:
                     print "Need to implement trouble for drivers"
                     

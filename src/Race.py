@@ -26,13 +26,13 @@ def rollDice(sides=100, times=1):
 class LapResult:
     def __init__(self):
         self._result = {}
-        self.runningOrder = []
+        self.runningOrder = [] # list of 2-tuple driverNumber,speed
         self.closed = False
         
-    def addDriverResult(self, driverNumber, rolls, pit=False, trouble=None):
+    def addDriverResult(self, driverNumber, rolls, initialLapSpeed, pit=False, trouble=None):
         if not self.closed:
             self._result[driverNumber] = {'rolls': rolls,
-                                         'speed': sum(rolls),
+                                         'speed': sum(rolls) + initialLapSpeed,
                                          'pit': pit,
                                          'trouble': trouble }
         else:
@@ -68,15 +68,14 @@ class Race(object):
         Constructor
         '''
         self.track = track
-        self.driverSpeedChart = {}
         self.driverQualifyMap = {}
-        self._enterDrivers(drivers)
+        self._initDrivers(drivers)
         self.currentLap = 0
         self.lapResult = []
         self.qualifying = []
         
 
-    def __initializeSpeedChart(self, driverNumber):
+    def __initializeSpeedChart(self, driver):
         """ given a driver load the appropriate speed data file and 
             parse the data based on the track type;
             
@@ -84,7 +83,8 @@ class Race(object):
             
             data format: roll, speedTrackSpeedRating, shortTrackSpeedRating, SuperSpeedTrackRating, RoadTrackRating 
         """
-        dataFile = "../resources/" + driverNumber + "sr.dat"
+        logging.info("initializing speed chart for: %s" % driver.number,)
+        dataFile = "../resources/" + driver.number + "sr.dat"
         col = None
         
         if self.track.type == Track.SPEED: 
@@ -106,10 +106,10 @@ class Race(object):
          
         fo.close()
         
-        self.driverSpeedChart[driverNumber] = speedChart                    
+        driver.setRaceSpeedChart( speedChart )                    
         
         
-    def _enterDrivers(self, drivers):
+    def _initDrivers(self, drivers):
         self.drivers = drivers
         
         for d in drivers:
@@ -117,8 +117,7 @@ class Race(object):
             #Load the qualifying speeds
             self.driverQualifyMap[d.number] = Qualify.getQualifySpeedChart(trackRating)
             #Load the speed ratings for this race
-            self.__initializeSpeedChart(d.number)
-            pass
+            self.__initializeSpeedChart(d)            
 
 
     def runQualifying(self, verbose=False):
@@ -187,18 +186,21 @@ class Race(object):
             row = i / self.track.grid
             penalty = -1 * rowsPerPenaltyPoint * row    
             
-            lap0.addDriverResult(qualify[0], [penalty] )            
+            lap0.addDriverResult(qualify[0], rolls = [penalty], initialLapSpeed = 0 )            
         
         lap0.processResults()            
         self.lapResult.append( lap0 )  #Lap 0 list
         
         return self.lapResult[0]
 
+
     def getPreviousLapResult(self):
         prev = self.currentLap - 1
         if prev < 0:
             logging.warn("previous lap is less than zero; returning results for lap 0")
             return self.lapResult[0]
+        else:
+            return self.lapResult[prev]
 
     def runLap(self, driver, qualifying=False):
         """
@@ -218,6 +220,21 @@ class Race(object):
                     
         return speedRolls
     
+    def calculateLapResults(self, prevLapResult, lapspeeds):
+        """
+            return: LapResult
+        """
+        lapResult = LapResult()
+        for pDriver, pSpeed in prevLapResult.getRunningOrder():
+            speed = None
+            for d,rolls in lapspeeds:
+                if d == pDriver:
+                    speed = rolls
+            if speed:
+                pass
+            else:
+                logging.error("could not find previous speed (lap %s ) for driver %s" % (self.currentLap -1, pDriver) )
+
                 
     def getRunningOrder(self, lapNumber=-1):
         if lapNumber < 0:

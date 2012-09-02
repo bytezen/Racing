@@ -1,4 +1,8 @@
 from Track import *
+import logging
+
+#log to terminal
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
         
 class DriverStats(object):
     def __init__(self, overall, quality, trouble, trackRatings):
@@ -10,6 +14,11 @@ class DriverStats(object):
 
 
 class RaceStatus(object):
+    def __init__(self):
+        self.currentLap = 0.
+        self.speed = 0.
+        self.lapsTilPit = -1
+        self.speedChart = None
     pass
         
         
@@ -26,8 +35,8 @@ class Driver(object):
         self.name = name
         self.number = number
         self.stats = DriverStats( overall, quality, trouble, trackRatings)
-        self.speedChart = [-1]*100
-        self.raceSpeed = 0
+        self.status = RaceStatus()
+        
 
     def loadDriverSpeedChart(self, trackType):
         dataFile = "../resources/" + self.number + "sr.dat"
@@ -45,29 +54,40 @@ class Driver(object):
             msg = "unknown track type: " + trackType
             raise ValueError,  msg 
         
-         
+        self.status.speedChart = [-1]*100
+        
         fo = open(dataFile, 'r')
         lines = fo.readline().split('\r') 
         for l in lines[1:]:  #first line is header "roll,trouble"
             _l = l.split(",")
-            self.speedChart[int(_l[0])] = int(_l[col])
+            self.status.speedChart[int(_l[0])] = int(_l[col])
          
         fo.close()        
         
 
-    def getSpeed(self, roll):
-        if self.speedChart[0] < 0:
-            raise Exception, " THis should be handled by Race not Driver...The Drivers speed chart for this race has not been initialized"
+    def calculateSpeed(self, roll):
+        if not self.status.speedChart[0]:
+            logging.error("no speed chart for %s"%self.name)
+            raise Exception, " This should be handled by Race not Driver...The Drivers speed chart for this race has not been initialized"
         
-        return self.speedChart[roll]
+        return self.status.speedChart[roll]
+    
+    def updateSpeed(self, speed):
+        self.status.speed += speed
+        
+    def getRaceSpeed(self):
+        return self.status.speed
     
     def setRaceSpeed(self, speed):
-        self.raceSpeed = self.raceSpeed + speed
+        self.status.speed = self.status.speed + speed
         
+                
     def getTrackRating(self,trackType):
         return self.stats.trackRatings[trackType]
                 
-                    
+    def setRaceSpeedChart(self, speedChart):
+        self.status.speedChart = speedChart
+                            
     def __repr__(self):
         return "#%s %s" % (self.number, self.name)        
         
