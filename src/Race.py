@@ -9,6 +9,10 @@ import Driver
 import Qualify
 import random
 import math
+import logging
+
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 
 def rollDice(sides=100, times=1):
@@ -40,6 +44,12 @@ class LapResult:
         self.closed = True
         return self.runningOrder
                         
+    def getRunningOrder(self):
+        return self.runningOrder
+    
+    def getResult(self):
+        return self.result
+                                
     def __repr__(self):
         s = ""
         for driver,result in self.runningOrder:
@@ -62,7 +72,7 @@ class Race(object):
         self.driverQualifyMap = {}
         self._enterDrivers(drivers)
         self.currentLap = 0
-        self.lap = []
+        self.lapResult = []
         self.qualifying = []
         
 
@@ -113,8 +123,9 @@ class Race(object):
 
     def runQualifying(self, verbose=False):
         """ 
-            for the current track and drivers in the race return a sorted dictionary of 
-            qualifying speeds indexed by driver number
+            return:  pair;
+                    sorted dictionary of qualifying speeds indexed by driver number,
+                    disqualified drivers w/ disqualification reason
         """
         _qualified = {}
         disqualified = {}
@@ -147,6 +158,8 @@ class Race(object):
                 break
             
             speedRatingTotal += speedRating
+            # TODO:
+            # Output the results per lap
         
         if troubleQualifying:
             roll = rollDice(sides=10)
@@ -159,28 +172,66 @@ class Race(object):
             return speed, None        
         
          
-    def startEngines(self):
+    def setStartingGrid(self):
         """ 
             set the starting order with start grid penalties
+            return: list of LapResults
         """
         lap0 = LapResult()
         
         startingRows = math.ceil( len(self.drivers) / self.track.grid )
-        rowsPerPenaltyPoint = max( startingRows / 7, 1 ) 
+        #max penalty for starting position is 6; use 7 because row 0 has no penalty        
+        rowsPerPenaltyPoint = max( startingRows / 7, 1 )  
         
         for i,qualify in enumerate( self.qualifying ):
             row = i / self.track.grid
-            penalty = -1 * rowsPerPenaltyPoint * row
-            
+            penalty = -1 * rowsPerPenaltyPoint * row    
             
             lap0.addDriverResult(qualify[0], [penalty] )            
         
         lap0.processResults()            
-        self.lap.append( lap0 )  #Lap 0 list
+        self.lapResult.append( lap0 )  #Lap 0 list
         
-        return self.lap[0]
+        return self.lapResult[0]
+
+    def getPreviousLapResult(self):
+        prev = self.currentLap - 1
+        if prev < 0:
+            logging.warn("previous lap is less than zero; returning results for lap 0")
+            return self.lapResult[0]
+
+    def runLap(self, driver, qualifying=False):
+        """
+            simulate a lap
+            return: the the driver's {rolls =[], speed = #} after the lap
+        """        
+        speedRolls = []
         
+        if not qualifying:
+            for r in range(self.track.rolls):
+                r = rollDice()
+                s = driver.calculateSpeed(r)
+                speedRolls.append(s)
+                
+                if s < 0:
+                    print "Need to implement trouble for drivers"
+                    
+        return speedRolls
     
+                
+    def getRunningOrder(self, lapNumber=-1):
+        if lapNumber < 0:
+            return self.lapResult[self.currentLap]
+        else: 
+            return self.lapResult[lapNumber]
+        
+       
+    def lookupDriver(self, number):
+        driver = None
+        for d in self.drivers:
+            if d.number == number:
+                return d
+
 
         
 if __name__ == '__main__':
@@ -192,4 +243,4 @@ if __name__ == '__main__':
     print testRace.runQualifying() 
     
     print "gentlemen start your engines...starting grid = "
-    print testRace.startEngines()        
+    print testRace.setStartingGrid()        
