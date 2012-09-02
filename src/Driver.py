@@ -1,5 +1,17 @@
 from Track import *
         
+class DriverStats(object):
+    def __init__(self, overall, quality, trouble, trackRatings):
+        self.overallRating = overall
+        self.qualityRating = quality
+        self.troubleRating = trouble
+        self.trackRatings = trackRatings
+    pass
+
+
+class RaceStatus(object):
+    pass
+        
         
 class Driver(object):
     '''
@@ -13,10 +25,7 @@ class Driver(object):
         '''
         self.name = name
         self.number = number
-        self.overallRating = overall
-        self.qualityRating = quality
-        self.troubleRating = trouble
-        self.trackRatings = trackRatings
+        self.stats = DriverStats( overall, quality, trouble, trackRatings)
         self.speedChart = [-1]*100
         self.raceSpeed = 0
 
@@ -56,7 +65,7 @@ class Driver(object):
         self.raceSpeed = self.raceSpeed + speed
         
     def getTrackRating(self,trackType):
-        return self.trackRatings[trackType]
+        return self.stats.trackRatings[trackType]
                 
                     
     def __repr__(self):
