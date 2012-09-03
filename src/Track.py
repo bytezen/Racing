@@ -17,7 +17,11 @@ class RaceTrack(object):
     def Pocono():
         return RaceTrack("Pocono Raceway",SPEED,10,1,7,2)
     
-    def __init__(self, name, type, laps, pits, pitWindows, rolls):
+    @staticmethod
+    def AutoClub():
+        return RaceTrack("Auto CLub Speedway", SPEED, laps=15, pits=1, pitWindow=10, rolls=2)
+    
+    def __init__(self, name, type, laps, pits, pitWindow, rolls):
         '''
         Constructor
         '''
@@ -25,7 +29,7 @@ class RaceTrack(object):
         self.type = type
         self.totalLaps = laps
         self.pitCount = pits
-        self.pitWindow = pitWindows
+        self.pitWindow = pitWindow
         self.rolls = rolls
         self.grid = 2  # cars per row in starting grid
         
@@ -40,8 +44,10 @@ class RaceTrack(object):
     def __repr__(self):
         return self.name
     
+# Track variables    
 Atlanta = RaceTrack.Atlanta()
-Pocono = RaceTrack.Pocono()    
+Pocono = RaceTrack.Pocono()  
+AutoClub = RaceTrack.AutoClub()  
 
 
  
