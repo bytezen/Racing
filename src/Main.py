@@ -70,7 +70,7 @@ def initializeDriverForRace(driver, trackType):
 
 if __name__ == '__main__':
     
-    track = Track.Atlanta
+    track = Track.AutoClub
     drivers = Driver.allDrivers    
     race = Race(track, drivers)    
     qualified,disqualified = race.runQualifying()
